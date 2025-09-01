@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generatore QR Code per Contatti (vCard)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Libreria per generare QR Code -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Stile per nascondere le frecce nell'input di tipo number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl mx-auto bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Generatore QR Code Contatto</h1>
+            <p class="text-gray-500 mt-2">Compila i campi qui sotto per creare una vCard e il relativo QR code.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Colonna del form -->
+            <form id="vcard-form" class="space-y-4">
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2">Informazioni Personali</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nome" class="block text-sm font-medium text-gray-600">Nome *</label>
+                        <input type="text" id="nome" name="nome" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="cognome" class="block text-sm font-medium text-gray-600">Cognome *</label>
+                        <input type="text" id="cognome" name="cognome" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="telefono" class="block text-sm font-medium text-gray-600">Telefono *</label>
+                    <input type="tel" id="telefono" name="telefono" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                 <div>
+                    <label for="email" class="block text-sm font-medium text-gray-600">Email</label>
+                    <input type="email" id="email" name="email" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="data_nascita" class="block text-sm font-medium text-gray-600">Data di nascita</label>
+                    <input type="date" id="data_nascita" name="data_nascita" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 pt-4">Informazioni Professionali</h2>
+                 <div>
+                    <label for="azienda" class="block text-sm font-medium text-gray-600">Azienda</label>
+                    <input type="text" id="azienda" name="azienda" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                 <div>
+                    <label for="posizione" class="block text-sm font-medium text-gray-600">Posizione Lavorativa</label>
+                    <input type="text" id="posizione" name="posizione" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="sito_web" class="block text-sm font-medium text-gray-600">Sito Web</label>
+                    <input type="url" id="sito_web" name="sito_web" placeholder="https://esempio.com" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="indirizzo_lavoro" class="block text-sm font-medium text-gray-600">Indirizzo di Lavoro</label>
+                    <input type="text" id="indirizzo_lavoro" name="indirizzo_lavoro" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+
+                <h2 class="text-xl font-semibold text-gray-700 border-b pb-2 pt-4">Altro</h2>
+                <div>
+                    <label for="note" class="block text-sm font-medium text-gray-600">Note</label>
+                    <textarea id="note" name="note" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+
+                <div class="pt-4 flex flex-col sm:flex-row gap-4">
+                    <button type="submit" class="w-full sm:w-1/2 bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300">
+                        Genera QR Code
+                    </button>
+                    <button type="reset" class="w-full sm:w-1/2 bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-300">
+                        Reset Campi
+                    </button>
+                </div>
+            </form>
+
+            <!-- Colonna del QR Code -->
+            <div class="flex flex-col items-center justify-center bg-gray-50 rounded-lg p-6 h-full">
+                <div id="qrcode-container" class="w-64 h-64 md:w-80 md:h-80 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+                    <p id="placeholder-text" class="text-gray-400 text-center">Il tuo QR code apparirà qui</p>
+                </div>
+                <button id="download-btn" class="hidden mt-6 w-full max-w-xs bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-300">
+                    Scarica Immagine
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('vcard-form');
+        const qrcodeContainer = document.getElementById('qrcode-container');
+        const placeholderText = document.getElementById('placeholder-text');
+        const downloadBtn = document.getElementById('download-btn');
+        let qrcodeInstance = null;
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            // Raccoglie i dati dal form
+            const nome = document.getElementById('nome').value;
+            const cognome = document.getElementById('cognome').value;
+            const telefono = document.getElementById('telefono').value;
+            const email = document.getElementById('email').value;
+            const dataNascita = document.getElementById('data_nascita').value;
+            const azienda = document.getElementById('azienda').value;
+            const posizione = document.getElementById('posizione').value;
+            const sitoWeb = document.getElementById('sito_web').value;
+            const indirizzoLavoro = document.getElementById('indirizzo_lavoro').value;
+            const note = document.getElementById('note').value;
+            
+            // Costruisce la stringa vCard
+            // La vCard è uno standard per i biglietti da visita elettronici
+            let vCardString = `BEGIN:VCARD\n`;
+            vCardString += `VERSION:3.0\n`;
+            // N: Cognome;Nome;;;
+            vCardString += `N:${cognome};${nome};;;\n`;
+            // FN: Nome Cognome
+            vCardString += `FN:${nome} ${cognome}\n`;
+            vCardString += `TEL;TYPE=CELL:${telefono}\n`;
+
+            if (email) vCardString += `EMAIL:${email}\n`;
+            if (azienda) vCardString += `ORG:${azienda}\n`;
+            if (posizione) vCardString += `TITLE:${posizione}\n`;
+            if (dataNascita) vCardString += `BDAY:${dataNascita}\n`;
+            if (sitoWeb) vCardString += `URL:${sitoWeb}\n`;
+            if (indirizzoLavoro) vCardString += `ADR;TYPE=WORK:;;${indirizzoLavoro};;;\n`;
+            if (note) vCardString += `NOTE:${note}\n`;
+            
+            vCardString += `END:VCARD`;
+
+            // Pulisce il contenitore del QR code precedente
+            qrcodeContainer.innerHTML = '';
+            placeholderText.classList.add('hidden');
+
+            // Crea la nuova istanza del QR Code
+            qrcodeInstance = new QRCode(qrcodeContainer, {
+                text: vCardString,
+                width: 320,
+                height: 320,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H // Livello di correzione errori alto
+            });
+
+            // Mostra il pulsante di download
+            downloadBtn.classList.remove('hidden');
+        });
+
+        // Aggiunge un listener per l'evento di reset del form
+        form.addEventListener('reset', function() {
+            // Svuota il contenitore del QR Code
+            qrcodeContainer.innerHTML = '';
+            // Ripristina l'istanza
+            qrcodeInstance = null;
+            
+            // Crea di nuovo il testo placeholder
+            const p = document.createElement('p');
+            p.id = 'placeholder-text';
+            p.className = 'text-gray-400 text-center';
+            p.innerText = 'Il tuo QR code apparirà qui';
+            qrcodeContainer.appendChild(p);
+
+            // Nasconde il pulsante di download
+            downloadBtn.classList.add('hidden');
+        });
+
+        downloadBtn.addEventListener('click', function() {
+            if (!qrcodeInstance) return;
+
+            // Trova l'elemento canvas o img generato dalla libreria
+            const canvas = qrcodeContainer.querySelector('canvas');
+            const img = qrcodeContainer.querySelector('img');
+            const nomeFile = `contatto-${document.getElementById('nome').value || 'qr'}.png`;
+
+            let imageUrl;
+            if (canvas) {
+                imageUrl = canvas.toDataURL("image/png");
+            } else if (img) {
+                // Se la libreria genera un'immagine, potrebbe essere necessario un approccio diverso
+                // ma questa versione di qrcode.js di solito usa canvas.
+                imageUrl = img.src;
+            } else {
+                return;
+            }
+
+            // Crea un link temporaneo per il download
+            const link = document.createElement('a');
+            link.href = imageUrl;
+            link.download = nomeFile;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    </script>
+
+</body>
+</html>
+
