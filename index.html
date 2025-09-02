@@ -8,6 +8,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Libreria per generare QR Code -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Libreria per convertire HTML in Canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Icone (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -263,6 +265,9 @@
                             </div>
                         </div>
                     </div>
+                    <button id="download-card-btn" class="hidden mt-4 mx-auto flex items-center justify-center w-full max-w-xs bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700">
+                        Scarica Biglietto da Visita
+                    </button>
                 </div>
                 <div class="w-full border-t border-gray-200 pt-6">
                      <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">QR Code Singolo</h3>
@@ -287,6 +292,7 @@
 
         const form = document.getElementById('vcard-form');
         const qrcodeGeneratorContainer = document.getElementById('qrcode-generator-container');
+        const downloadCardBtn = document.getElementById('download-card-btn');
         let logoDataUrl = null;
 
         const notificationModal = document.getElementById('notification-modal');
@@ -378,7 +384,6 @@
                     activeTemplate.style.display = 'flex';
                 }
 
-
                 updateCardField('.card-nome-cognome', `${data.nome} ${data.cognome}`);
                 updateCardField('.card-descrizione', data.descrizione_biglietto);
                 updateCardField('.card-azienda', data.azienda);
@@ -416,6 +421,7 @@
                     if(separator) separator.style.backgroundColor = textColor;
                 }
                 
+                downloadCardBtn.classList.remove('hidden');
                 lucide.createIcons();
             });
         });
@@ -452,26 +458,57 @@
             });
         });
 
-        form.addEventListener('reset', function(e) {
-            e.preventDefault(); // Impedisce il reset standard che ripristina i valori iniziali
+        downloadCardBtn.addEventListener('click', function() {
+            const activeTemplate = document.querySelector('.business-card-template:not([style*="display: none"])');
+            if (!activeTemplate) {
+                showNotification("Nessuna anteprima da scaricare.");
+                return;
+            }
 
-            // Pulisce manualmente i campi del form
+            const originalBorder = activeTemplate.style.border;
+            activeTemplate.style.border = 'none';
+
+            html2canvas(activeTemplate, {
+                scale: 3, 
+                useCORS: true,
+                backgroundColor: null
+            }).then(canvas => {
+                activeTemplate.style.border = originalBorder;
+
+                const imageUrl = canvas.toDataURL('image/png');
+                const data = getFormData();
+                const fileName = `biglietto-visita-${data.nome || 'utente'}-${data.cognome || ''}.png`.replace(/\s+/g, '-').toLowerCase();
+
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }).catch(err => {
+                activeTemplate.style.border = originalBorder;
+                showNotification("Errore durante la creazione dell'immagine.");
+                console.error("html2canvas error:", err);
+            });
+        });
+
+        form.addEventListener('reset', function(e) {
+            e.preventDefault(); 
+
             form.querySelectorAll('input[type="text"], input[type="tel"], input[type="email"], input[type="url"], input[type="file"]').forEach(input => {
                 input.value = '';
             });
 
-            // Reimposta i valori predefiniti per select e colori
             document.getElementById('template_scelta').value = 'minimale';
             document.getElementById('colore_sfondo').value = '#FFFFFF';
             document.getElementById('colore_testo').value = '#1f2937';
 
-            // Resetta il logo e l'area QR standalone
             logoDataUrl = null;
             const standaloneQrContainer = document.getElementById('standalone-qrcode-container');
             standaloneQrContainer.innerHTML = `<p id="standalone-placeholder-text" class="text-gray-400 text-center text-sm p-2">Il QR code apparirà qui dopo la generazione.</p>`;
             document.getElementById('download-qr-btn').classList.add('hidden');
+            downloadCardBtn.classList.add('hidden');
             
-            // Aggiorna l'anteprima per mostrare lo stato "vuoto" senza generare un QR code
             const emptyData = getFormData();
             const selectedTemplate = emptyData.template_scelta;
             document.querySelectorAll('.business-card-template').forEach(t => t.style.display = 'none');
@@ -486,10 +523,9 @@
             updateCardField('.card-sito_web', '');
             updateCardField('.card-indirizzo_lavoro', '');
 
-            document.querySelectorAll('.card-qrcode').forEach(el => el.src = ''); // Rimuove l'immagine QR
-            document.querySelectorAll('.card-logo').forEach(el => el.classList.add('hidden')); // Nasconde il logo
+            document.querySelectorAll('.card-qrcode').forEach(el => el.src = '');
+            document.querySelectorAll('.card-logo').forEach(el => el.classList.add('hidden'));
 
-            // Reimposta i colori
             const bgColor = emptyData.colore_sfondo;
             const textColor = emptyData.colore_testo;
             
